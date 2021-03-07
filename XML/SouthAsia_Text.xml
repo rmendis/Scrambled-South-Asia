@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SouthAsia_Text -->
+<!-- Author: blkbutterfly74 -->
+<!-- DateCreated: 2/8/2018 4:52:55 PM -->
+<GameData>
+	<FrontEndText>
+
+		<!-- Texts for Maps -->
+		<Row Tag="LOC_SOUTH_ASIA_MAP_NAME">
+			<Text>Scrambled South Asia</Text>
+		</Row>
+		<Row Tag="LOC_SOUTH_ASIA_MAP_DESCRIPTION">
+			<Text>An internally randomized map of South Asia.</Text>
+		</Row>
+
+	</FrontEndText>
+</GameData>

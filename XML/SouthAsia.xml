@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SouthAsia -->
+<!-- Author: blkbutterfly74 -->
+<!-- DateCreated: 9/23/2017 8:33:53 PM -->
+<GameInfo>
+	<GlobalParameters>
+		<Replace Name="RIVER_SOURCE_RANGE_DEFAULT" Value="6" />
+
+		<!-- more lakes -->
+		<Replace Name="LAKE_PLOT_RANDOM" Value="18" />
+	</GlobalParameters>
+</GameInfo>

@@ -4,12 +4,16 @@
 <!-- DateCreated: 2/8/2018 4:51:04 PM -->
 <GameInfo>
 	<Maps>
-		<!-- for R&F -->
-		<Row Domain="Maps:Expansion1Maps" File="{116E92DD-C254-4554-B305-8BE491584E42}Maps/SouthAsia.lua" Name="LOC_SOUTH_ASIA_MAP_NAME" Description="LOC_SOUTH_ASIA_MAP_DESCRIPTION"/>
+		<!-- for GS -->
+		<Row Domain="Maps:Expansion2Maps" File="{116E92DD-C254-4554-B305-8BE491584E42}Maps/SouthAsia_XP2.lua" Name="LOC_SOUTH_ASIA_MAP_NAME" Description="LOC_SOUTH_ASIA_MAP_DESCRIPTION"/>
 
 		<!-- for base game -->
 		<Row File="{116E92DD-C254-4554-B305-8BE491584E42}Maps/SouthAsia.lua" Name="LOC_SOUTH_ASIA_MAP_NAME" Description="LOC_SOUTH_ASIA_MAP_DESCRIPTION"/>
 	</Maps>
+
+	<DomainValueFilters>
+		<Row Domain="Maps:Expansion2Maps" Value="{116E92DD-C254-4554-B305-8BE491584E42}Maps/SouthAsia.lua" Filter="difference"/>
+	</DomainValueFilters>
 
 	<!-- advanced settings -->
 	<Parameters>

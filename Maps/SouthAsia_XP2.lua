@@ -1,6 +1,6 @@
--- SouthAsia
+-- SouthAsia_XP2
 -- Author: blkbutterfly74
--- DateCreated: 9/19/2017 5:20:56 PM
+-- DateCreated: 3/7/2021 1:32:40 PM
 -- Creates a tiny map shaped like real-world South Asia
 -- based off Africa, SEA amd Inland Sea map scripts
 -- Thanks to Firaxis
@@ -14,6 +14,7 @@ include "FeatureGenerator"
 include "TerrainGenerator"
 include "NaturalWonderGenerator"
 include "ResourceGenerator"
+include "CoastalLowlands"
 include "AssignStartingPlots"
 
 -- tiny map data
@@ -212,6 +213,7 @@ local g_CenterY;
 local g_landStrips;
 local g_xOffset = 0;
 local g_yOffset = 0;
+local featuregen = nil;
 
 -------------------------------------------------------------------------------
 function GenerateMap()
@@ -224,22 +226,36 @@ function GenerateMap()
 	local temperature = MapConfiguration.GetValue("temperature"); -- Default setting is Temperate.
 
 	local shift = 0.07;
-	
-	plotTypes = GeneratePlotTypes();
-	terrainTypes = GenerateTerrainTypesSouthAsia(plotTypes, g_iW, g_iH, g_iFlags, true, temperature, shift);
 
-	for i = 0, (g_iW * g_iH) - 1, 1 do
-		pPlot = Map.GetPlotByIndex(i);
-		if (plotTypes[i] == g_PLOT_TYPE_HILLS) then
-			terrainTypes[i] = terrainTypes[i] + 1;
-		end
-		TerrainBuilder.SetTerrainType(pPlot, terrainTypes[i]);
+	--	local world_age
+	local world_age_new = 5;
+	local world_age_normal = 3;
+	local world_age_old = 2;
+
+	local world_age = MapConfiguration.GetValue("world_age");
+	if (world_age == 1) then
+		world_age = world_age_new;
+	elseif (world_age == 3) then
+		world_age = world_age_old;
+	else
+		world_age = world_age_normal;	-- default
 	end
+	
+	plotTypes = GeneratePlotTypes(world_age);
+	terrainTypes = GenerateTerrainTypesSouthAsia(plotTypes, g_iW, g_iH, g_iFlags, true, temperature, shift);
+	ApplyBaseTerrain(plotTypes, terrainTypes, g_iW, g_iH);
 
-	-- Temp
 	AreaBuilder.Recalculate();
+	--[[ blackbutterfly74 - Why this additional AnalyzeChockepoint()? Commenting out for now:
+	TerrainBuilder.AnalyzeChokepoints(); --]]
+	TerrainBuilder.StampContinents();
+
+	local iContinentBoundaryPlots = GetContinentBoundaryPlotCount(g_iW, g_iH);
 	local biggest_area = Areas.FindBiggestArea(false);
 	print("After Adding Hills: ", biggest_area:GetPlotCount());
+	AddTerrainFromContinents(plotTypes, terrainTypes, world_age, g_iW, g_iH, iContinentBoundaryPlots);
+
+	AreaBuilder.Recalculate();
 	
 	-- Place lakes before rivers to act as sources of water
 	AddLakes(0);
@@ -248,6 +264,8 @@ function GenerateMap()
 	AddRivers();
 
 	AddFeatures();
+
+	TerrainBuilder.AnalyzeChokepoints();
 	
 	print("Adding cliffs");
 	AddCliffs(plotTypes, terrainTypes);
@@ -258,9 +276,8 @@ function GenerateMap()
 
 	local nwGen = NaturalWonderGenerator.Create(args);
 
-	AreaBuilder.Recalculate();
-	TerrainBuilder.AnalyzeChokepoints();
-	TerrainBuilder.StampContinents();
+	AddFeaturesFromContinents();
+	MarkCoastalLowlands();
 	
 	local resourcesConfig = MapConfiguration.GetValue("resources");
 	local startConfig = MapConfiguration.GetValue("start");-- Get the start config
@@ -310,7 +327,7 @@ function GetMapInitData(MapSize)
 	end
 end
 -------------------------------------------------------------------------------
-function GeneratePlotTypes()
+function GeneratePlotTypes(world_age)
 	print("Generating Plot Types");
 	local plotTypes = {};
 
@@ -339,20 +356,6 @@ function GeneratePlotTypes()
 	end
 		
 	AreaBuilder.Recalculate();
-
-	--	local world_age
-	local world_age_new = 5;
-	local world_age_normal = 3;
-	local world_age_old = 2;
-
-	local world_age = MapConfiguration.GetValue("world_age");
-	if (world_age == 1) then
-		world_age = world_age_new;
-	elseif (world_age == 2) then
-		world_age = world_age_normal;
-	else
-		world_age = world_age_old;	-- default
-	end
 	
 	local args = {};
 	args.world_age = world_age;
@@ -428,9 +431,9 @@ function AddFeatures()
 	end
 
 	local args = {rainfall = rainfall, iJunglePercent = 25, iMarshPercent = 15, iForestPercent = 10, iReefPercent = 11}	-- jungle & marsh max coverage
-	local featuregen = FeatureGenerator.Create(args);
+	featuregen = FeatureGenerator.Create(args);
 
-	featuregen:AddFeatures();
+	featuregen:AddFeatures(true, false);  --second parameter is whether or not rivers start inland);
 
 	-- add jungle more densely at center
 	for iX = 0, g_iW - 1 do
@@ -578,9 +581,10 @@ function GenerateTerrainTypesSouthAsia(plotTypes, iW, iH, iFlags, bNoCoastalMoun
 	
 	return terrainTypes; 
 end
+
 ------------------------------------------------------------------------------
-function FeatureGenerator:AddIceAtPlot(plot, iX, iY)
-	return false;
+function FeatureGenerator:AddIceToMap()
+	return false, 0;
 end
 
 ------------------------------------------------------------------------------
@@ -612,6 +616,13 @@ function FeatureGenerator:AddReefAtPlot(plot, iX, iY)
 				end
 		end
 	end
+end
+
+------------------------------------------------------------------------------
+function AddFeaturesFromContinents()
+	print("Adding Features from Continents");
+
+	featuregen:AddFeaturesFromContinents();
 end
 
 -- override: northern forest bias
